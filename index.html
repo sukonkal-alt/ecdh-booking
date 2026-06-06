@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจองเครื่อง HD Digihuman ECDH</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #0D9488;
+  --teal-light: #CCFBF1;
+  --teal-dark: #0F766E;
+  --teal-xlight: #F0FDFA;
+  --purple: #7C3AED;
+  --purple-light: #EDE9FE;
+  --amber: #D97706;
+  --amber-light: #FEF3C7;
+  --rose: #E11D48;
+  --rose-light: #FFE4E6;
+  --blue: #1D4ED8;
+  --blue-light: #DBEAFE;
+  --green: #16A34A;
+  --green-light: #DCFCE7;
+  --pink: #DB2777;
+  --pink-light: #FCE7F3;
+  --slate: #475569;
+  --slate-light: #F1F5F9;
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --muted: #64748B;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.03);
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+
+/* TOP BAR */
+.topbar{background:linear-gradient(135deg,#0D9488 0%,#0F766E 50%,#134E4A 100%);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;box-shadow:0 2px 8px rgba(13,148,136,0.3)}
+.topbar-brand{display:flex;align-items:center;gap:12px;color:#fff}
+.topbar-brand svg{flex-shrink:0}
+.topbar-title{font-size:16px;font-weight:600;letter-spacing:0.01em}
+.topbar-sub{font-size:11px;opacity:0.75;font-weight:400}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.gs-btn{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-family:'Sarabun',sans-serif;cursor:pointer;font-weight:500;transition:all 0.2s}
+.gs-btn:hover{background:rgba(255,255,255,0.25)}
+.gs-btn.connected{background:rgba(255,255,255,0.9);color:#0D9488}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#4ADE80;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:24px 20px}
+
+/* SUMMARY CARDS */
+.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.sum-card .num{font-size:26px;font-weight:700;color:var(--teal);line-height:1}
+.sum-card .lbl{font-size:12px;color:var(--muted);margin-top:4px}
+.sum-card.dept .num{font-size:20px}
+
+/* CONTROLS */
+.controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.nav-group{display:flex;align-items:center;gap:8px}
+.nav-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--slate);transition:all 0.15s}
+.nav-btn:hover{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+.month-label{font-size:17px;font-weight:600;min-width:170px;text-align:center;color:var(--text)}
+.add-btn{display:flex;align-items:center;gap:7px;background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-family:'Sarabun',sans-serif;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 6px rgba(13,148,136,0.3)}
+.add-btn:hover{background:var(--teal-dark);box-shadow:0 4px 10px rgba(13,148,136,0.4)}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* CALENDAR */
+.cal-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md)}
+.day-headers{display:grid;grid-template-columns:repeat(7,1fr);background:var(--slate-light);border-bottom:1px solid var(--border)}
+.day-hdr{padding:10px 4px;text-align:center;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0.05em}
+.days{display:grid;grid-template-columns:repeat(7,1fr)}
+.day-cell{min-height:90px;padding:7px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--card);cursor:pointer;transition:background 0.12s;vertical-align:top}
+.day-cell:nth-child(7n){border-right:none}
+.day-cell:hover{background:var(--teal-xlight)}
+.day-cell.other-month{background:#FAFAFA}
+.day-cell.other-month .dn{color:#CBD5E1}
+.day-cell.today{background:var(--teal-xlight)}
+.day-cell.today .dn{background:var(--teal);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.dn{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.chip{font-size:10px;padding:2px 6px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;font-weight:500;line-height:1.4}
+.chip:hover{opacity:0.8}
+.more-badge{font-size:10px;color:var(--teal);font-weight:600;padding:1px 4px}
+
+/* DEPT COLORS */
+.d0{background:#CCFBF1;color:#0F766E}
+.d1{background:#EDE9FE;color:#5B21B6}
+.d2{background:#FEF3C7;color:#92400E}
+.d3{background:#DBEAFE;color:#1E40AF}
+.d4{background:#DCFCE7;color:#166534}
+.d5{background:#FCE7F3;color:#9D174D}
+.d6{background:#FFE4E6;color:#9F1239}
+.d7{background:#F1F5F9;color:#334155}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);padding:28px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.modal-icon{width:36px;height:36px;border-radius:9px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:18px;flex-shrink:0}
+.modal-title{font-size:16px;font-weight:600}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:13px;font-weight:500;color:var(--slate);margin-bottom:5px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:'Sarabun',sans-serif;color:var(--text);background:#fff;transition:border 0.15s;outline:none}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,0.1)}
+.form-row textarea{height:70px;resize:vertical}
+.other-dept-row{display:none}
+.other-dept-row.show{display:block}
+.btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.btn-cancel{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px;font-family:'Sarabun',sans-serif;color:var(--muted);font-weight:500}
+.btn-cancel:hover{background:var(--slate-light)}
+.btn-save{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:14px;font-family:'Sarabun',sans-serif;font-weight:600;transition:all 0.2s}
+.btn-save:hover{background:var(--teal-dark)}
+.btn-del{background:#FFF1F2;color:var(--rose);border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:14px;font-family:'Sarabun',sans-serif;font-weight:500}
+.btn-del:hover{background:#FFE4E6}
+
+/* DETAIL */
+.detail-grid{display:grid;gap:10px}
+.detail-row{display:flex;gap:10px;font-size:14px}
+.dl{color:var(--muted);min-width:80px;font-size:13px;font-weight:500;padding-top:1px}
+.dv{color:var(--text);flex:1}
+.dept-badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:6px}
+
+/* EXPORT */
+.export-btn{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;font-family:'Sarabun',sans-serif;cursor:pointer;color:var(--slate);font-weight:500;transition:all 0.2s}
+.export-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-xlight)}
+
+/* GS SETUP MODAL */
+.gs-setup{background:var(--teal-xlight);border:1px solid rgba(13,148,136,0.2);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;font-size:13px;color:#0F766E}
+.gs-setup a{color:var(--teal);font-weight:600}
+.gs-url-input{font-size:13px!important}
+.tag{display:inline-block;background:var(--teal-light);color:var(--teal-dark);font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;margin-left:6px;vertical-align:middle}
+
+/* CONFLICT */
+.conflict-msg{background:#FFF1F2;border:1px solid #FECDD3;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--rose);margin-top:8px;display:none}
+.conflict-msg.show{display:block}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;border-radius:10px;padding:12px 20px;font-size:14px;font-family:'Sarabun',sans-serif;z-index:2000;transform:translateY(80px);opacity:0;transition:all 0.3s;box-shadow:var(--shadow-lg)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:#0D9488}
+.toast.error{background:#E11D48}
+
+/* FOOTER */
+.footer{text-align:center;padding:24px;font-size:12px;color:var(--muted);margin-top:8px}
+
+@media(max-width:640px){
+  .topbar{padding:0 14px;height:54px}
+  .topbar-title{font-size:14px}
+  .container{padding:14px 10px}
+  .summary-row{grid-template-columns:repeat(2,1fr)}
+  .month-label{font-size:14px;min-width:130px}
+  .day-cell{min-height:60px;padding:4px}
+  .dn{font-size:11px}
+  .chip{font-size:9px}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="8" fill="rgba(255,255,255,0.15)"/>
+      <rect x="5" y="10" width="22" height="16" rx="2" fill="none" stroke="white" stroke-width="1.5"/>
+      <path d="M10 10V8a6 6 0 0112 0v2" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="12" cy="18" r="2" fill="white"/>
+      <circle cx="20" cy="18" r="2" fill="white"/>
+      <line x1="14" y1="18" x2="18" y2="18" stroke="white" stroke-width="1.5"/>
+    </svg>
+    <div>
+      <div class="topbar-title">ระบบจองเครื่อง HD Digihuman ECDH</div>
+      <div class="topbar-sub">Virtual Anatomy Table · คณะแพทยศาสตร์ มหาวิทยาลัยกรุงเทพธนบุรี</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="export-btn" id="exportBtn" onclick="exportExcel()" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25);color:#fff;font-size:12px">
+      ⬇ Export Excel
+    </button>
+    <button class="gs-btn" id="gsBtn" onclick="openGsModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zm-10 13H7v-2h2.5v2zm0-4H7v-2h2.5v2zm0-4H7V6h2.5v2zm7.5 8H12v-2h5v2zm0-4H12v-2h5v2zm0-4H12V6h5v2z"/></svg>
+      <span id="gsBtnTxt">เชื่อม Google Sheets</span>
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SUMMARY -->
+<div class="summary-row" id="summaryRow"></div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="nav-group">
+    <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="add-btn" onclick="openAdd()">
+      <span style="font-size:18px;line-height:1">+</span> จองใหม่
+    </button>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend" id="legend"></div>
+
+<!-- CALENDAR -->
+<div class="cal-wrap">
+  <div class="day-headers">
+    <div class="day-hdr">อา</div><div class="day-hdr">จ.</div><div class="day-hdr">อ.</div>
+    <div class="day-hdr">พ.</div><div class="day-hdr">พฤ.</div><div class="day-hdr">ศ.</div><div class="day-hdr">ส.</div>
+  </div>
+  <div class="days" id="calDays"></div>
+</div>
+
+</div>
+
+<div class="footer">
+  HD Digihuman Virtual Anatomy Table (ECDH) · Wicer Enterprise Co., Ltd. · 1 เครื่อง
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="addOverlay">
+<div class="modal">
+  <div class="modal-header">
+    <div class="modal-icon">📅</div>
+    <div>
+      <div class="modal-title" id="modalTitle">เพิ่มการจอง</div>
+      <div style="font-size:12px;color:var(--muted)">ECDH Virtual Anatomy Table</div>
+    </div>
+  </div>
+  <div class="form-row">
+    <label>วันที่ <span style="color:var(--rose)">*</span></label>
+    <input type="date" id="fDate">
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="form-row">
+      <label>เวลาเริ่ม <span style="color:var(--rose)">*</span></label>
+      <select id="fTimeStart" onchange="updateEndTime()">
+        <option value="08:00">08:00</option><option value="08:30">08:30</option>
+        <option value="09:00">09:00</option><option value="09:30">09:30</option>
+        <option value="10:00">10:00</option><option value="10:30">10:30</option>
+        <option value="11:00">11:00</option><option value="11:30">11:30</option>
+        <option value="12:00">12:00</option><option value="12:30">12:30</option>
+        <option value="13:00">13:00</option><option value="13:30">13:30</option>
+        <option value="14:00">14:00</option><option value="14:30">14:30</option>
+        <option value="15:00">15:00</option><option value="15:30">15:30</option>
+        <option value="16:00">16:00</option><option value="16:30">16:30</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>เวลาสิ้นสุด <span style="color:var(--rose)">*</span></label>
+      <select id="fTimeEnd">
+        <option value="08:30">08:30</option><option value="09:00">09:00</option>
+        <option value="09:30">09:30</option><option value="10:00">10:00</option>
+        <option value="10:30">10:30</option><option value="11:00">11:00</option>
+        <option value="11:30">11:30</option><option value="12:00">12:00</option>
+        <option value="12:30">12:30</option><option value="13:00">13:00</option>
+        <option value="13:30">13:30</option><option value="14:00">14:00</option>
+        <option value="14:30">14:30</option><option value="15:00">15:00</option>
+        <option value="15:30">15:30</option><option value="16:00">16:00</option>
+        <option value="16:30">16:30</option><option value="17:00">17:00</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <label>สาขาวิชา <span style="color:var(--rose)">*</span></label>
+    <select id="fDept" onchange="deptChange()">
+      <option value="กายวิภาคศาสตร์">กายวิภาคศาสตร์</option>
+      <option value="สรีรวิทยา">สรีรวิทยา</option>
+      <option value="พยาธิวิทยา">พยาธิวิทยา</option>
+      <option value="ชีวเคมี">ชีวเคมี</option>
+      <option value="จุลชีววิทยา">จุลชีววิทยา</option>
+      <option value="เภสัชวิทยา">เภสัชวิทยา</option>
+      <option value="นิติเวชศาสตร์">นิติเวชศาสตร์</option>
+      <option value="อื่นๆ">อื่นๆ (ระบุเอง)</option>
+    </select>
+  </div>
+  <div class="form-row other-dept-row" id="otherDeptRow">
+    <label>ระบุสาขา/หน่วยงาน</label>
+    <input type="text" id="fDeptOther" placeholder="เช่น วิทยาศาสตร์การแพทย์">
+  </div>
+  <div class="form-row">
+    <label>ชื่ออาจารย์ / ผู้จอง <span style="color:var(--rose)">*</span></label>
+    <input type="text" id="fName" placeholder="เช่น รศ.ดร.สมชาย วงศ์ดี">
+  </div>
+  <div class="form-row">
+    <label>วัตถุประสงค์</label>
+    <textarea id="fNote" placeholder="เช่น สอนนักศึกษาแพทย์ชั้นปีที่ 2, ทดสอบระบบ"></textarea>
+  </div>
+  <div class="conflict-msg" id="conflictMsg">⚠️ ช่วงเวลานี้ซ้อนทับกับการจองของ: <span id="conflictDetail"></span></div>
+  <div class="btn-row">
+    <button class="btn-del" id="btnDel" style="display:none" onclick="deleteBooking()">🗑 ลบการจอง</button>
+    <button class="btn-cancel" onclick="closeModals()">ยกเลิก</button>
+    <button class="btn-save" onclick="saveBooking()">✓ บันทึก</button>
+  </div>
+</div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailOverlay">
+<div class="modal">
+  <div class="modal-header">
+    <div class="modal-icon">🔍</div>
+    <div>
+      <div class="modal-title">รายละเอียดการจอง</div>
+      <div style="font-size:12px;color:var(--muted)">ECDH Virtual Anatomy Table</div>
+    </div>
+  </div>
+  <div class="detail-grid" id="detailContent"></div>
+  <div class="btn-row" style="margin-top:20px">
+    <button class="btn-del" id="detailDel" onclick="deleteFromDetail()">🗑 ลบการจอง</button>
+    <button class="btn-cancel" onclick="closeModals()">ปิด</button>
+    <button class="btn-save" onclick="editFromDetail()">✏️ แก้ไข</button>
+  </div>
+</div>
+</div>
+
+<!-- GOOGLE SHEETS MODAL -->
+<div class="overlay" id="gsOverlay">
+<div class="modal">
+  <div class="modal-header">
+    <div class="modal-icon">📊</div>
+    <div>
+      <div class="modal-title">เชื่อมต่อ Google Sheets</div>
+      <div style="font-size:12px;color:var(--muted)">จัดเก็บข้อมูลการจองใน Google Drive</div>
+    </div>
+  </div>
+  <div class="gs-setup">
+    <strong>วิธีตั้งค่า:</strong><br>
+    1. เปิด <a href="https://sheets.new" target="_blank">Google Sheets</a> ใหม่ → ตั้งชื่อ "ECDH Booking"<br>
+    2. ไปที่ <strong>Extensions → Apps Script</strong><br>
+    3. วางโค้ด Web App (ดูด้านล่าง) แล้ว Deploy → Web App<br>
+    4. Copy URL ที่ได้มาวางด้านล่าง
+  </div>
+  <div class="form-row">
+    <label>Google Apps Script Web App URL</label>
+    <input type="url" id="gsUrl" class="gs-url-input" placeholder="https://script.google.com/macros/s/...">
+  </div>
+  <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--muted);margin-bottom:14px">
+    <strong style="color:var(--text);display:block;margin-bottom:6px">📋 โค้ด Apps Script (คัดลอกทั้งหมด):</strong>
+    <div id="gasCode" style="background:#0F172A;color:#E2E8F0;padding:10px;border-radius:6px;font-family:monospace;font-size:11px;white-space:pre;overflow-x:auto;max-height:150px;overflow-y:auto"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-cancel" onclick="closeModals()">ยกเลิก</button>
+    <button class="btn-cancel" onclick="disconnectGs()">ยกเลิกการเชื่อม</button>
+    <button class="btn-save" onclick="connectGs()">✓ เชื่อมต่อ</button>
+  </div>
+</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ===== CONFIG =====
+const DEPTS = ['กายวิภาคศาสตร์','สรีรวิทยา','พยาธิวิทยา','ชีวเคมี','จุลชีววิทยา','เภสัชวิทยา','นิติเวชศาสตร์','อื่นๆ'];
+const DEPT_COLORS = ['d0','d1','d2','d3','d4','d5','d6','d7'];
+const DEPT_LABELS = ['กายวิภาคฯ','สรีรวิทยา','พยาธิวิทยา','ชีวเคมี','จุลชีววิทยา','เภสัชวิทยา','นิติเวชฯ','อื่นๆ'];
+const TH_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const TH_DAYS_SHORT = ['อา','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+
+// ===== STATE =====
+let bookings = [];
+let viewYear = new Date().getFullYear();
+let viewMonth = new Date().getMonth();
+let editingId = null;
+let detailId = null;
+let gsUrl = '';
+
+// ===== GAS CODE =====
+const GAS_CODE = `function doGet(e) {
+  return handleRequest(e);
+}
+function doPost(e) {
+  return handleRequest(e);
+}
+function handleRequest(e) {
+  var action = e.parameter.action || (e.postData ? JSON.parse(e.postData.contents).action : '');
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Bookings') || ss.insertSheet('Bookings');
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(['ID','วันที่','เวลาเริ่ม','เวลาสิ้นสุด','สาขา','ชื่อผู้จอง','วัตถุประสงค์','วันที่บันทึก']);
+  }
+  var result = {};
+  if (action === 'getAll') {
+    var data = sh.getDataRange().getValues();
+    result = {data: data};
+  } else if (action === 'add') {
+    var body = JSON.parse(e.postData.contents);
+    sh.appendRow([body.id, body.date, body.timeStart, body.timeEnd, body.dept, body.name, body.note, new Date().toLocaleString('th-TH')]);
+    result = {ok: true};
+  } else if (action === 'delete') {
+    var body = JSON.parse(e.postData.contents);
+    var rows = sh.getDataRange().getValues();
+    for (var i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(body.id)) { sh.deleteRow(i+1); break; }
+    }
+    result = {ok: true};
+  } else if (action === 'update') {
+    var body = JSON.parse(e.postData.contents);
+    var rows = sh.getDataRange().getValues();
+    for (var i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(body.id)) {
+        sh.getRange(i+1, 2, 1, 6).setValues([[
+          body.date, body.timeStart, body.timeEnd, body.dept, body.name, body.note
+        ]]);
+        break;
+      }
+    }
+    result = {ok: true};
+  }
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+// ===== STORAGE =====
+function save() {
+  try { localStorage.setItem('ecdh_v2', JSON.stringify({bookings, gsUrl})); } catch(e){}
+}
+function load() {
+  try {
+    const d = localStorage.getItem('ecdh_v2');
+    if (d) { const p = JSON.parse(d); bookings = p.bookings||[]; gsUrl = p.gsUrl||''; }
+  } catch(e){}
+  if (!bookings.length) seedData();
+  if (gsUrl) updateGsBtn(true);
+}
+
+function seedData() {
+  bookings = [];
+  save();
+}
+
+// ===== GOOGLE SHEETS =====
+async function gsRequest(action, data={}) {
+  if (!gsUrl) return null;
+  try {
+    const isGet = action === 'getAll';
+    const opts = isGet
+      ? {method:'GET'}
+      : {method:'POST', body: JSON.stringify({action, ...data}), headers:{'Content-Type':'text/plain;charset=utf-8'}};
+    const url = isGet ? `${gsUrl}?action=getAll` : gsUrl;
+    const res = await fetch(url, opts);
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+async function syncFromGs() {
+  if (!gsUrl) return;
+  const res = await gsRequest('getAll');
+  if (!res || !res.data) return;
+  const rows = res.data.slice(1);
+  bookings = rows.map(r => ({
+    id: Number(r[0]), date: r[1], timeStart: r[2], timeEnd: r[3],
+    dept: r[4], name: r[5], note: r[6]||''
+  })).filter(b => b.id);
+  save(); renderAll();
+  showToast('ซิงค์ข้อมูลจาก Google Sheets แล้ว', 'success');
+}
+
+function openGsModal() {
+  document.getElementById('gsUrl').value = gsUrl;
+  document.getElementById('gasCode').textContent = GAS_CODE;
+  showOverlay('gsOverlay');
+}
+function connectGs() {
+  const url = document.getElementById('gsUrl').value.trim();
+  if (!url.startsWith('https://script.google.com')) { showToast('URL ไม่ถูกต้อง', 'error'); return; }
+  gsUrl = url; save(); updateGsBtn(true); closeModals();
+  syncFromGs();
+}
+function disconnectGs() {
+  gsUrl = ''; save(); updateGsBtn(false); closeModals();
+  showToast('ยกเลิกการเชื่อมต่อแล้ว');
+}
+function updateGsBtn(connected) {
+  const btn = document.getElementById('gsBtn');
+  const txt = document.getElementById('gsBtnTxt');
+  if (connected) {
+    btn.classList.add('connected');
+    btn.innerHTML = `<div class="status-dot"></div><span>Sheets เชื่อมแล้ว</span>`;
+  } else {
+    btn.classList.remove('connected');
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zm-10 13H7v-2h2.5v2zm0-4H7v-2h2.5v2zm0-4H7V6h2.5v2zm7.5 8H12v-2h5v2zm0-4H12v-2h5v2zm0-4H12V6h5v2z"/></svg><span>เชื่อม Google Sheets</span>`;
+  }
+}
+
+// ===== DEPT HELPERS =====
+function deptClass(dept) {
+  const i = DEPTS.indexOf(dept);
+  return i >= 0 ? DEPT_COLORS[i] : 'd7';
+}
+function deptLabel(dept) {
+  const i = DEPTS.indexOf(dept);
+  return i >= 0 ? DEPT_LABELS[i] : dept.slice(0,5);
+}
+
+// ===== TIME HELPERS =====
+function timeToMin(t) { const [h,m]=t.split(':'); return +h*60+(+m||0); }
+function hasConflict(date, ts, te, excludeId=null) {
+  const s = timeToMin(ts), e = timeToMin(te);
+  return bookings.find(b => b.date===date && b.id!==excludeId && timeToMin(b.timeStart)<e && timeToMin(b.timeEnd)>s);
+}
+
+// ===== RENDER =====
+function renderAll() { renderSummary(); renderLegend(); renderCal(); }
+
+function renderSummary() {
+  const counts = {};
+  DEPTS.forEach(d => counts[d]=0);
+  bookings.forEach(b => { if (counts[b.dept]!==undefined) counts[b.dept]++; else counts['อื่นๆ']++; });
+  const now = new Date(), y=now.getFullYear(), m=now.getMonth();
+  const monthCount = bookings.filter(b=>{ const d=new Date(b.date); return d.getFullYear()===y&&d.getMonth()===m; }).length;
+  let html = `<div class="sum-card"><div class="num">${bookings.length}</div><div class="lbl">การจองทั้งหมด</div></div>`;
+  html += `<div class="sum-card"><div class="num">${monthCount}</div><div class="lbl">เดือนนี้</div></div>`;
+  DEPTS.slice(0,6).forEach((d,i) => {
+    if (counts[d]) html += `<div class="sum-card dept"><div class="num ${DEPT_COLORS[i]}" style="font-size:18px;display:inline-block;padding:2px 8px;border-radius:6px">${counts[d]}</div><div class="lbl">${DEPT_LABELS[i]}</div></div>`;
+  });
+  document.getElementById('summaryRow').innerHTML = html;
+}
+
+function renderLegend() {
+  const used = [...new Set(bookings.map(b=>b.dept))];
+  const html = DEPTS.filter(d=>used.includes(d)).map((d,_)=>{
+    const i=DEPTS.indexOf(d);
+    const colors = [['#CCFBF1','#0F766E'],['#EDE9FE','#5B21B6'],['#FEF3C7','#92400E'],['#DBEAFE','#1E40AF'],['#DCFCE7','#166534'],['#FCE7F3','#9D174D'],['#FFE4E6','#9F1239'],['#F1F5F9','#334155']];
+    return `<div class="leg"><div class="leg-dot" style="background:${colors[i][0]};border:1px solid ${colors[i][1]}"></div>${d}</div>`;
+  }).join('');
+  document.getElementById('legend').innerHTML = html;
+}
+
+function renderCal() {
+  document.getElementById('monthLabel').textContent = `${TH_MONTHS[viewMonth]} ${viewYear+543}`;
+  const container = document.getElementById('calDays');
+  container.innerHTML = '';
+  const first = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+  const prevDays = new Date(viewYear, viewMonth, 0).getDate();
+  const today = new Date();
+
+  let cells = [];
+  for (let i=first-1;i>=0;i--) cells.push({d:prevDays-i,cur:false});
+  for (let d=1;d<=daysInMonth;d++) cells.push({d,cur:true});
+  while (cells.length%7!==0) cells.push({d:cells.length-daysInMonth-first+2,cur:false});
+
+  cells.forEach(cell => {
+    const div = document.createElement('div');
+    div.className = 'day-cell' + (cell.cur?'':' other-month');
+    if (!cell.cur) { div.innerHTML=`<div class="dn">${cell.d}</div>`; container.appendChild(div); return; }
+
+    const mm = String(viewMonth+1).padStart(2,'0'), dd = String(cell.d).padStart(2,'0');
+    const dateStr = `${viewYear}-${mm}-${dd}`;
+    const isToday = today.getFullYear()===viewYear&&today.getMonth()===viewMonth&&today.getDate()===cell.d;
+    if (isToday) div.classList.add('today');
+
+    const dayBk = bookings.filter(b=>b.date===dateStr).sort((a,b)=>a.timeStart.localeCompare(b.timeStart));
+    const dnEl = document.createElement('div');
+    dnEl.className = 'dn'; dnEl.textContent = cell.d;
+    div.appendChild(dnEl);
+
+    const MAX_SHOW = 3;
+    dayBk.slice(0, MAX_SHOW).forEach(bk => {
+      const chip = document.createElement('div');
+      chip.className = 'chip ' + deptClass(bk.dept);
+      chip.textContent = `${bk.timeStart} ${deptLabel(bk.dept)}`;
+      chip.onclick = e => { e.stopPropagation(); openDetail(bk.id); };
+      div.appendChild(chip);
+    });
+    if (dayBk.length > MAX_SHOW) {
+      const more = document.createElement('div');
+      more.className = 'more-badge';
+      more.textContent = `+${dayBk.length-MAX_SHOW} รายการ`;
+      div.appendChild(more);
+    }
+    div.onclick = () => openAdd(dateStr);
+    container.appendChild(div);
+  });
+}
+
+// ===== MODALS =====
+function showOverlay(id) { document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show')); document.getElementById(id).classList.add('show'); }
+function closeModals() { document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show')); editingId=null; document.getElementById('conflictMsg').classList.remove('show'); }
+
+function openAdd(dateStr='') {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'เพิ่มการจอง';
+  document.getElementById('btnDel').style.display = 'none';
+  if (!dateStr) { const t=new Date(); dateStr=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
+  document.getElementById('fDate').value = dateStr;
+  document.getElementById('fTimeStart').value = '09:00';
+  document.getElementById('fTimeEnd').value = '10:00';
+  document.getElementById('fDept').value = 'กายวิภาคศาสตร์';
+  document.getElementById('fName').value = '';
+  document.getElementById('fNote').value = '';
+  document.getElementById('otherDeptRow').classList.remove('show');
+  document.getElementById('conflictMsg').classList.remove('show');
+  showOverlay('addOverlay');
+}
+
+function openEdit(id) {
+  const bk = bookings.find(b=>b.id===id); if(!bk) return;
+  closeModals();
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'แก้ไขการจอง';
+  document.getElementById('btnDel').style.display = 'inline-flex';
+  document.getElementById('fDate').value = bk.date;
+  document.getElementById('fTimeStart').value = bk.timeStart;
+  document.getElementById('fTimeEnd').value = bk.timeEnd;
+  const isOther = !DEPTS.slice(0,-1).includes(bk.dept);
+  document.getElementById('fDept').value = isOther ? 'อื่นๆ' : bk.dept;
+  if (isOther) { document.getElementById('fDeptOther').value=bk.dept; document.getElementById('otherDeptRow').classList.add('show'); }
+  else document.getElementById('otherDeptRow').classList.remove('show');
+  document.getElementById('fName').value = bk.name;
+  document.getElementById('fNote').value = bk.note||'';
+  document.getElementById('conflictMsg').classList.remove('show');
+  showOverlay('addOverlay');
+}
+
+function openDetail(id) {
+  const bk = bookings.find(b=>b.id===id); if(!bk) return;
+  detailId = id;
+  const dc = deptClass(bk.dept);
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-row"><span class="dl">วันที่</span><span class="dv">${formatDate(bk.date)}</span></div>
+    <div class="detail-row"><span class="dl">เวลา</span><span class="dv">${bk.timeStart} – ${bk.timeEnd} น.</span></div>
+    <div class="detail-row"><span class="dl">สาขา</span><span class="dv"><span class="dept-badge ${dc}">${bk.dept}</span></span></div>
+    <div class="detail-row"><span class="dl">ผู้จอง</span><span class="dv">${bk.name}</span></div>
+    ${bk.note?`<div class="detail-row"><span class="dl">หมายเหตุ</span><span class="dv">${bk.note}</span></div>`:''}
+  `;
+  showOverlay('detailOverlay');
+}
+
+function deptChange() {
+  const v = document.getElementById('fDept').value;
+  document.getElementById('otherDeptRow').classList.toggle('show', v==='อื่นๆ');
+}
+function updateEndTime() {
+  const s = document.getElementById('fTimeStart').value;
+  const sm = timeToMin(s)+60;
+  const h=Math.floor(sm/60),m=sm%60;
+  const endVal=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  const endSel=document.getElementById('fTimeEnd');
+  if([...endSel.options].some(o=>o.value===endVal)) endSel.value=endVal;
+}
+
+async function saveBooking() {
+  const date=document.getElementById('fDate').value;
+  const ts=document.getElementById('fTimeStart').value;
+  const te=document.getElementById('fTimeEnd').value;
+  let dept=document.getElementById('fDept').value;
+  if (dept==='อื่นๆ') { dept=document.getElementById('fDeptOther').value.trim()||'อื่นๆ'; }
+  const name=document.getElementById('fName').value.trim();
+  const note=document.getElementById('fNote').value.trim();
+  if (!date||!name) { showToast('กรุณากรอกวันที่และชื่อผู้จอง','error'); return; }
+  if (timeToMin(ts)>=timeToMin(te)) { showToast('เวลาสิ้นสุดต้องมากกว่าเวลาเริ่ม','error'); return; }
+  const conflict = hasConflict(date,ts,te,editingId);
+  if (conflict) {
+    document.getElementById('conflictDetail').textContent=`${conflict.dept} · ${conflict.name} (${conflict.timeStart}–${conflict.timeEnd})`;
+    document.getElementById('conflictMsg').classList.add('show');
+    return;
+  }
+  const wasEditing = Boolean(editingId);
+  if (wasEditing) {
+    const bk=bookings.find(b=>b.id===editingId);
+    Object.assign(bk,{date,timeStart:ts,timeEnd:te,dept,name,note});
+    if (gsUrl) await gsRequest('update',{id:editingId,date,timeStart:ts,timeEnd:te,dept,name,note});
+  } else {
+    const id=Date.now();
+    bookings.push({id,date,timeStart:ts,timeEnd:te,dept,name,note});
+    if (gsUrl) await gsRequest('add',{id,date,timeStart:ts,timeEnd:te,dept,name,note});
+  }
+  save(); closeModals(); renderAll();
+  showToast(wasEditing?'อัปเดตการจองแล้ว':'บันทึกการจองแล้ว','success');
+}
+
+async function deleteBooking() {
+  if (!editingId) return;
+  if (!confirm('ยืนยันการลบการจองนี้?')) return;
+  if (gsUrl) await gsRequest('delete',{id:editingId});
+  bookings=bookings.filter(b=>b.id!==editingId);
+  save(); closeModals(); renderAll();
+  showToast('ลบการจองแล้ว');
+}
+function deleteFromDetail() { if(detailId){editingId=detailId;deleteBooking();} }
+function editFromDetail() { if(detailId){closeModals();openEdit(detailId);} }
+
+// ===== EXPORT EXCEL =====
+function exportExcel() {
+  const ws_data = [
+    ['ID','วันที่','วันในสัปดาห์','เวลาเริ่ม','เวลาสิ้นสุด','สาขาวิชา','ชื่ออาจารย์/ผู้จอง','วัตถุประสงค์'],
+    ...bookings.sort((a,b)=>a.date.localeCompare(b.date)||(a.timeStart.localeCompare(b.timeStart))).map(b => {
+      const d=new Date(b.date);
+      const days=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+      return [b.id, b.date, days[d.getDay()], b.timeStart, b.timeEnd, b.dept, b.name, b.note||''];
+    })
+  ];
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(ws_data);
+  ws['!cols']=[{wch:8},{wch:12},{wch:12},{wch:10},{wch:10},{wch:18},{wch:28},{wch:30}];
+  XLSX.utils.book_append_sheet(wb,ws,'การจอง ECDH');
+  const now=new Date(); const fname=`ECDH_Booking_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
+  XLSX.writeFile(wb,fname);
+  showToast('Export Excel สำเร็จ','success');
+}
+
+// ===== HELPERS =====
+function formatDate(str) {
+  const [y,m,d]=str.split('-');
+  return `${parseInt(d)} ${TH_MONTHS[parseInt(m)-1]} ${parseInt(y)+543}`;
+}
+function changeMonth(dir) {
+  viewMonth+=dir; if(viewMonth<0){viewMonth=11;viewYear--;} if(viewMonth>11){viewMonth=0;viewYear++;} renderCal();
+}
+function showToast(msg,type='') {
+  const t=document.getElementById('toast'); t.textContent=msg; t.className='toast'+(type?' '+type:'');
+  void t.offsetWidth; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// close overlay on bg click
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModals();}));
+
+load(); renderAll();
+</script>
+</body>
+</html>
