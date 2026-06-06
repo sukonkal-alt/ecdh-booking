@@ -381,7 +381,8 @@ let viewYear = new Date().getFullYear();
 let viewMonth = new Date().getMonth();
 let editingId = null;
 let detailId = null;
-let gsUrl = '';
+const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbwQqD3tBH-QLxdzOyg8CkvHzppNwqjBy_RuvBCYGXWUyqDs_RHJVxsvHYOS5k9FkbP3mg/exec';
+let gsUrl = DEFAULT_GS_URL;
 
 // ===== GAS CODE =====
 const GAS_CODE = `function doGet(e) {
@@ -435,7 +436,7 @@ function save() {
 function load() {
   try {
     const d = localStorage.getItem('ecdh_v2');
-    if (d) { const p = JSON.parse(d); bookings = p.bookings||[]; gsUrl = p.gsUrl||''; }
+    if (d) { const p = JSON.parse(d); bookings = p.bookings||[]; gsUrl = p.gsUrl||DEFAULT_GS_URL; }
   } catch(e){}
   if (!bookings.length) seedData();
   if (gsUrl) updateGsBtn(true);
@@ -735,7 +736,7 @@ function showToast(msg,type='') {
 // close overlay on bg click
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModals();}));
 
-load(); renderAll();
+load(); renderAll(); if (gsUrl) syncFromGs();
 </script>
 </body>
 </html>
